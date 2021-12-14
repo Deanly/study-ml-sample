@@ -7,6 +7,7 @@
     "license": "MIT",
     "scripts": {
         "p": "tsc && node dist/perceptron.js",
+        "b": "tsc && node dist/backpropagation.js",
         "start": "npm run serve",
         "build": "npm run build-sass && npm run build-ts && npm run tslint && npm run copy-static-assets",
         "serve": "node dist/server.js",

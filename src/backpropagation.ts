@@ -1,15 +1,14 @@
-namespace p {
-
+namespace b {
     /* 기호 상수 */
     const INPUT_NO = 2;
-    const HIDDEN_NO = 2;
+    const HIDDEN_NO = 10;
     const ALPHA = 29;
     const MAX_INPUT_NO = 100;
     const BIG_NUM = 100;
-    const LIMIT = 0.001;
+    const LIMIT = 0.01;
 
     async function main() {
-        console.log("퍼셉트론");
+        console.log("퍼셉트론 역전파 알고리즘");
         const weightHiddenLayer: Array<Array<number>> = new Array(HIDDEN_NO).fill(1).map(() => new Array(INPUT_NO + 1).fill(0));
         const weightOutputLayer: Array<number> = new Array(HIDDEN_NO + 1).fill(0);
         const dataSets: Array<Array<number>> = new Array(MAX_INPUT_NO).fill(1).map(() => new Array(INPUT_NO + 1).fill(0));
@@ -38,8 +37,10 @@ namespace p {
             for (j = 0; j < countOfData; j++) {
                 // 순방향 계산
                 output = forward(weightHiddenLayer, weightOutputLayer, outputHiddenLayer, dataSets[j]);
-                // 출력층의 가중치 조정
+                // 출력층 가중치 조정
                 learnWeightOutputLayer(weightOutputLayer, outputHiddenLayer, dataSets[j], output);
+                // 중간층 가중치 조정
+                learnWeightHiddenLayer(weightHiddenLayer, weightOutputLayer, outputHiddenLayer, dataSets[j], output);
                 // 오차의 적산
                 error += (output - dataSets[j][INPUT_NO]) * (output - dataSets[j][INPUT_NO]);
             }
@@ -56,7 +57,7 @@ namespace p {
         // 연결 강도 출력
         printResult(weightHiddenLayer, weightOutputLayer);
 
-        // 학습 데이터에 대한 출력
+        // 학습 데이터 출력
         for (i = 0; i < countOfData; i++) {
             console.log(i, dataSets[i].join(" "), forward(weightHiddenLayer, weightOutputLayer, outputHiddenLayer, dataSets[i]));
         }
@@ -169,6 +170,22 @@ namespace p {
             weightOutputLayer[i] += ALPHA * outputHiddenLayer[i] * d;
         }
         weightOutputLayer[i] += ALPHA * (-1.0) * d;
+    }
+
+    function learnWeightHiddenLayer(weightHiddenLayer: Array<Array<number>>, weightOutputLayer: Array<number>, outputHiddenLayer: Array<number>, dataSet: Array<number>, output: number): void {
+        let i, j; // 반복 제어
+        let weight; // 중간층 가중치 계산 변수
+
+        for (j = 0; j < HIDDEN_NO; j++) {
+            // 중간층 각 셀 j를 대상
+            weight = outputHiddenLayer[j] * (1 - outputHiddenLayer[j]) * weightOutputLayer[j] * (dataSet[INPUT_NO] - output) * output * (1 - output);
+            for (i = 0; i < INPUT_NO; i++) {
+                // i 번째 가중치 처리
+                weightHiddenLayer[j][i] += ALPHA * dataSet[i] * weight;
+            }
+            // 임계치 학습
+            weightHiddenLayer[j][i] += ALPHA * (-1.0) * weight;
+        }
     }
 
     /**
